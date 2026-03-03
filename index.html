@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>嘉寀萌商務中心 | 尊榮共享空間，成就不凡未來</title>
+    <meta name="description" content="嘉寀萌商務中心 (CTMEBC) 提供頂級辦公環境、靈活空間配置與尊榮商務服務，為您的企業打造專屬的成功基地。">
+    <!-- Use specific versioned CDNs for stability -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.8/iconify-icon.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap');
+
+        /* Global Reset & Base Variables */
+        :root {
+            --bg-color: #0d0e12; /* Darker base */
+            --text-color: #e2e8f0;
+            --accent-color: #d4af37; /* Premium Gold */
+            --glass-bg: rgba(21, 23, 27, 0.85); /* More solid background for mobile visibility */
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            
+            /* Responsive Noise Texture */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            background-blend-mode: overlay;
+            /* Ensures noise scales correctly and doesn't blur on resize/mobile */
+            background-size: 100px 100px; /* Fixed scale for the tile */
+            background-repeat: repeat; /* Tile it to cover the screen */
+            background-attachment: fixed; /* Keep it stationary on scroll to prevent motion sickness & blurring */
+            background-color: rgba(13, 14, 18, 0.98); /* Solid dark base under noise */
+        }
+
+        /* Custom Cursor - Desktop Only */
+        #cursor-dot {
+            position: fixed;
+            top: 0; left: 0;
+            width: 12px; height: 12px;
+            background-color: white;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+            display: none; /* Mobile default */
+        }
+
+        #cursor-follower {
+            position: fixed;
+            top: 0; left: 0;
+            width: 40px; height: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s, background-color 0.3s;
+            mix-blend-mode: difference;
+            display: none; /* Mobile default */
+        }
+
+        /* Enable cursor only on devices with true mouse */
+        @media (hover: hover) and (pointer: fine) {
+            #cursor-dot, #cursor-follower { display: block; }
+            body { cursor: none; }
+        }
+
+        .cursor-hover #cursor-follower {
+            width: 60px; height: 60px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: transparent;
+        }
+
+        /* Vertical Reference Lines */
+        .grid-lines {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            opacity: 0.04;
+        }
+        .grid-lines div { border-right: 1px solid white; }
+
+        /* Magnetic Button Wrapper */
+        .magnetic-wrap { display: inline-block; }
+
+        /* 1px Border Beam Effect */
+        .beam-border {
+            position: relative;
+            border-radius: 9999px;
+            background: var(--bg-color);
+            z-index: 1;
+        }
+        .beam-border::before {
+            content: '';
+            position: absolute;
+            top: -1px; left: -1px; right: -1px; bottom: -1px;
+            border-radius: inherit;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.8), transparent);
+            z-index: -1;
+            background-size: 200% 100%;
+            animation: beam 3s linear infinite;
+        }
+        @keyframes beam {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Number Decoration */
+        .section-number {
+            font-size: clamp(4rem, 10vw, 8rem);
+            font-weight: 900;
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.06);
+            position: absolute;
+            top: -2rem; left: -1rem;
+            z-index: 0;
+            pointer-events: none;
+            user-select: none;
+        }
+        @media (min-width: 768px) {
+            .section-number { left: -2rem; }
+        }
+
+        /* Typography & Utilities */
+        .char { display: inline-block; }
+        
+        .glass-panel {
+            background-color: var(--glass-bg); /* Fallback/Solid dark color */
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            /* Box shadow to create depth against the noise */
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .text-accent { color: var(--accent-color); }
+        .bg-accent { background-color: var(--accent-color); }
+
+        /* Fluid Typography specifically designed to prevent layout breaks */
+        .fluid-text {
+            font-size: clamp(1.8rem, 6vw, 4.5rem);
+            line-height: 1.3;
+            word-break: keep-all; /* Keeps Chinese punctuation together with words */
+            white-space: nowrap; /* Forces text to stay on one line initially */
+        }
+
+        /* Fallback for extremely small screens to allow wrapping if absolutely necessary */
+        @media (max-width: 360px) {
+            .fluid-text {
+                white-space: normal;
+                word-break: break-all;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-[#d4af37] selection:text-black">
+
+    <!-- Custom Cursor -->
+    <div id="cursor-dot"></div>
+    <div id="cursor-follower"></div>
+
+    <!-- Background Grid Lines -->
+    <div class="grid-lines">
+        <div></div><div></div><div></div><div></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full top-0 z-50 glass-panel border-b-0 border-x-0 border-t-0 rounded-none mix-blend-difference">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold tracking-widest text-white uppercase">
+                CTMEBC<span class="text-accent text-3xl leading-none">.</span>
+            </div>
+            <div class="hidden md:flex space-x-8 text-sm uppercase tracking-widest text-white">
+                <a href="#about" class="hover-trigger hover:text-accent transition-colors">空間美學</a>
+                <a href="#services" class="hover-trigger hover:text-accent transition-colors">尊榮服務</a>
+                <a href="#location" class="hover-trigger hover:text-accent transition-colors">據點優勢</a>
+            </div>
+            <div class="magnetic-wrap hover-trigger">
+                <a href="#contact" class="beam-border px-4 py-2 md:px-6 text-xs md:text-sm font-medium tracking-wider text-white hover:text-black hover:bg-white transition-all duration-300">
+                    預約體驗
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative h-[100svh] flex items-center justify-center overflow-hidden pt-20"> <!-- use svh for better mobile rendering -->
+        <!-- Parallax Background Image -->
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop" alt="Premium Office Space" class="w-full h-full object-cover opacity-30 scale-105" id="hero-bg">
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#0d0e12]/50 to-[#0d0e12]"></div>
+        </div>
+
+        <div class="relative z-10 text-center px-4 max-w-5xl mx-auto">
+            <p class="text-accent tracking-[0.3em] uppercase text-xs md:text-sm mb-6 reveal-text font-medium">
+                Jia Cai Meng Business Center
+            </p>
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-black mb-8 leading-tight tracking-tight text-white mix-blend-difference">
+                <span class="block split-text">重新定義</span>
+                <span class="block split-text text-gray-300">商務新高度</span>
+            </h1>
+            <p class="text-gray-300 text-base md:text-xl max-w-2xl mx-auto mb-12 font-light reveal-text delay-200 drop-shadow-lg">
+                嘉寀萌商務中心為您打造極致質感的辦公聚落，匯聚頂尖菁英，激發無限商業潛能。這不僅是辦公室，更是您成就不凡的戰略基地。
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-6 reveal-text delay-400">
+                <div class="magnetic-wrap hover-trigger mx-auto">
+                    <button class="bg-white text-black px-6 py-3 md:px-8 md:py-4 rounded-full font-bold tracking-wider hover:scale-105 transition-transform duration-300 flex items-center gap-2 text-sm md:text-base">
+                        啟動專屬空間 <iconify-icon icon="lucide:arrow-right"></iconify-icon>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-50 reveal-text delay-500">
+            <span class="text-[10px] md:text-xs tracking-widest uppercase mb-2">Scroll</span>
+            <div class="w-px h-8 md:h-12 bg-white/30 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-full bg-white origin-top animate-[scroll_2s_ease-in-out_infinite]"></div>
+            </div>
+        </div>
+        <style>@keyframes scroll { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } 50.1% { transform: scaleY(1); transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }</style>
+    </section>
+
+    <!-- Core Values Section -->
+    <section id="about" class="py-24 md:py-32 relative z-10">
+        <div class="max-w-7xl mx-auto px-6 relative">
+            <div class="section-number">01</div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                <div class="space-y-8 pr-0 lg:pr-12 relative z-10">
+                    <h2 class="text-3xl md:text-5xl font-bold leading-tight split-text">
+                        三大核心主張，<br><span class="text-gray-500">鑄就企業基石。</span>
+                    </h2>
+                    <div class="space-y-8 md:space-y-12 mt-12 md:mt-16">
+                        <!-- Value 1 -->
+                        <div class="flex gap-4 md:gap-6 items-start group hover-trigger reveal-item">
+                            <div class="p-3 md:p-4 rounded-xl md:rounded-2xl bg-white/5 border border-white/10 group-hover:bg-accent/20 group-hover:border-accent/50 transition-colors duration-500 shrink-0">
+                                <iconify-icon icon="solar:sofa-bold-duotone" class="text-2xl md:text-3xl text-accent"></iconify-icon>
+                            </div>
+                            <div>
+                                <h3 class="text-lg md:text-xl font-bold mb-2 text-white drop-shadow-md">無縫銜接的頂級空間</h3>
+                                <!-- Ensured bright white text for mobile readability against dark grey noise -->
+                                <p class="text-white font-medium text-sm md:text-base leading-relaxed drop-shadow-md opacity-90">提供從獨立靜謐的私人辦公室到靈活激盪的共享區域，搭載人體工學傢俱與極簡美學設計。</p>
+                            </div>
+                        </div>
+                        <!-- Value 2 -->
+                        <div class="flex gap-4 md:gap-6 items-start group hover-trigger reveal-item">
+                            <div class="p-3 md:p-4 rounded-xl md:rounded-2xl bg-white/5 border border-white/10 group-hover:bg-accent/20 group-hover:border-accent/50 transition-colors duration-500 shrink-0">
+                                <iconify-icon icon="solar:crown-star-bold-duotone" class="text-2xl md:text-3xl text-accent"></iconify-icon>
+                            </div>
+                            <div>
+                                <h3 class="text-lg md:text-xl font-bold mb-2 text-white drop-shadow-md">禮賓級的商務後援</h3>
+                                <p class="text-white font-medium text-sm md:text-base leading-relaxed drop-shadow-md opacity-90">專業雙語秘書接待、專屬信件包裹收發，以及高規格的企業隱私保護，讓您專注於核心決策。</p>
+                            </div>
+                        </div>
+                        <!-- Value 3 -->
+                        <div class="flex gap-4 md:gap-6 items-start group hover-trigger reveal-item">
+                            <div class="p-3 md:p-4 rounded-xl md:rounded-2xl bg-white/5 border border-white/10 group-hover:bg-accent/20 group-hover:border-accent/50 transition-colors duration-500 shrink-0">
+                                <iconify-icon icon="solar:global-bold-duotone" class="text-2xl md:text-3xl text-accent"></iconify-icon>
+                            </div>
+                            <div>
+                                <h3 class="text-lg md:text-xl font-bold mb-2 text-white drop-shadow-md">菁英匯聚的社群脈絡</h3>
+                                <p class="text-white font-medium text-sm md:text-base leading-relaxed drop-shadow-md opacity-90">定期舉辦跨界交流盛宴，串聯各領域翹楚，為您的事業版圖尋找下一塊關鍵拼圖。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="relative h-[400px] md:h-[600px] w-full rounded-2xl md:rounded-[2rem] overflow-hidden group hover-trigger mt-12 lg:mt-0">
+                    <img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2064&auto=format&fit=crop" alt="Meeting Room" class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 parallax-img">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+                    <div class="absolute bottom-6 left-6 right-6 md:bottom-8 md:left-8 md:right-8 glass-panel p-4 md:p-6 border-white/10">
+                        <p class="text-xs md:text-sm text-accent uppercase tracking-widest mb-1 md:mb-2 font-bold">Premium Boardroom</p>
+                        <p class="text-base md:text-xl text-white font-medium drop-shadow-lg">配置 4K 視訊設備的高階會議室，決策彈指之間。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Logo Marquee (Trusted By) -->
+    <section class="py-16 md:py-20 border-y border-white/5 bg-black/60 overflow-hidden relative z-10 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-6 mb-8 text-center">
+             <p class="text-xs md:text-sm tracking-[0.2em] text-gray-500 uppercase font-bold">卓越企業的共同選擇</p>
+        </div>
+        <div class="flex space-x-12 md:space-x-16 whitespace-nowrap animate-[marquee_20s_linear_infinite] opacity-60 hover:opacity-100 transition-opacity duration-500 hover-trigger items-center">
+            <!-- First set -->
+            <iconify-icon icon="simple-icons:microsoft" class="text-3xl md:text-4xl text-white"></iconify-icon>
+            <iconify-icon icon="simple-icons:tesla" class="text-3xl md:text-4xl text-white"></iconify-icon>
+            <iconify-icon icon="simple-icons:bloomberg" class="text-3xl md:text-4xl text-white"></iconify-icon>
+            <iconify-icon icon="simple-icons:forbes" class="text-3xl md:text-4xl text-white"></iconify-icon>
+            <iconify-icon icon="simple-icons:intel" class="text-3xl md:text-4xl text-white"></iconify-icon>
+            <iconify-icon icon="simple-icons:porsche" class="text-3xl md:text-4xl text-white"></iconify-icon>
+            <!-- Second set for seamless loop -->
+            <iconify-icon icon="simple-icons:microsoft" class="text-3xl md:text-4xl text-white ml-12 md:ml-16"></iconify-icon>
+            <iconify-icon icon="simple-icons:tesla" class="text-3xl md:text-4xl text-white"></iconify-icon>
+            <iconify-icon icon="simple-icons:bloomberg" class="text-3xl md:text-4xl text-white"></iconify-icon>
+            <iconify-icon icon="simple-icons:forbes" class="text-3xl md:text-4xl text-white"></iconify-icon>
+            <iconify-icon icon="simple-icons:intel" class="text-3xl md:text-4xl text-white"></iconify-icon>
+            <iconify-icon icon="simple-icons:porsche" class="text-3xl md:text-4xl text-white"></iconify-icon>
+        </div>
+        <style>@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }</style>
+    </section>
+
+    <!-- Feature Grid Section -->
+    <section id="services" class="py-24 md:py-32 relative z-10">
+        <div class="max-w-7xl mx-auto px-6 relative">
+            <div class="section-number right-0 left-auto text-right">02</div>
+            <div class="text-center mb-16 md:mb-24 relative z-10">
+                <h2 class="text-3xl md:text-6xl font-black mb-4 md:mb-6 split-text">重塑工作日常</h2>
+                <p class="text-gray-300 max-w-2xl mx-auto text-base md:text-lg reveal-text">每一個細節都為卓越而生，CTMEBC 提供全方位的商務解決方案。</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                <!-- Card 1 -->
+                <div class="glass-panel p-6 md:p-8 group hover-trigger reveal-item md:hover:-translate-y-2 transition-transform duration-500 bg-[#15171b]/90 border-white/10">
+                    <div class="h-40 md:h-48 rounded-xl overflow-hidden mb-6 relative bg-black">
+                        <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100">
+                    </div>
+                    <h3 class="text-xl md:text-2xl font-bold mb-3 text-white drop-shadow-md">獨立行政套房</h3>
+                    <p class="text-gray-200 font-medium text-sm md:text-base opacity-90">提供高管團隊專屬的隱私空間，頂配傢俱與獨立門禁系統，彰顯非凡地位。</p>
+                </div>
+                <!-- Card 2 -->
+                <div class="glass-panel p-6 md:p-8 group hover-trigger reveal-item md:hover:-translate-y-2 transition-transform duration-500 delay-100 bg-[#15171b]/90 border-white/10">
+                    <div class="h-40 md:h-48 rounded-xl overflow-hidden mb-6 relative bg-black">
+                        <img src="https://images.unsplash.com/photo-1517502884422-41eaead166d4?q=80&w=1925&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100">
+                    </div>
+                    <h3 class="text-xl md:text-2xl font-bold mb-3 text-white drop-shadow-md">流動創意工坊</h3>
+                    <p class="text-gray-200 font-medium text-sm md:text-base opacity-90">開放式設計思維空間，適合敏捷團隊，激發無限創意與跨部門協作。</p>
+                </div>
+                <!-- Card 3 -->
+                <div class="glass-panel p-6 md:p-8 group hover-trigger reveal-item md:hover:-translate-y-2 transition-transform duration-500 delay-200 bg-[#15171b]/90 border-white/10">
+                    <div class="h-40 md:h-48 rounded-xl overflow-hidden mb-6 relative bg-black">
+                        <img src="https://images.unsplash.com/photo-1600508774634-4e11d34730e2?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100">
+                    </div>
+                    <h3 class="text-xl md:text-2xl font-bold mb-3 text-white drop-shadow-md">雲端智慧大廳</h3>
+                    <p class="text-gray-200 font-medium text-sm md:text-base opacity-90">配備頂級義式咖啡機與無死角高速網路，接待貴賓或放鬆沉思的完美場域。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call To Action (Magnetic CTA) -->
+    <section class="py-24 md:py-32 relative overflow-hidden" id="contact">
+        <!-- Softer background accent for better contrast -->
+        <div class="absolute inset-0 bg-accent/5 backdrop-blur-sm z-0"></div>
+        
+        <div class="w-full mx-auto px-4 md:px-6 text-center relative z-10 flex flex-col items-center justify-center">
+            <iconify-icon icon="solar:buildings-2-bold-duotone" class="text-5xl md:text-6xl text-accent mb-6 md:mb-8"></iconify-icon>
+            
+            <!-- Scalable Container for Title to prevent line breaks on phones -->
+            <div class="w-full max-w-[100vw] overflow-hidden flex justify-center mb-6 md:mb-8">
+                 <h2 class="font-black text-white whitespace-nowrap fluid-text drop-shadow-lg flex gap-0 md:gap-2">
+                    <span class="split-text">入駐嘉寀萌，</span>
+                    <span class="split-text">掌握未來的發語權。</span>
+                </h2>
+            </div>
+
+            <p class="text-base md:text-xl text-gray-300 mb-10 md:mb-12 font-medium max-w-2xl mx-auto px-4 drop-shadow">
+                現在預約專屬導覽，即刻感受 CTMEBC 的極致魅力。
+            </p>
+            
+            <div class="magnetic-wrap hover-trigger">
+                <button class="relative inline-flex h-14 md:h-20 active:scale-95 transition-transform overflow-hidden rounded-full p-[2px] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-black">
+                    <span class="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#0d0e12_0%,#d4af37_50%,#0d0e12_100%)]"></span>
+                    <span class="inline-flex h-full w-full cursor-pointer md:cursor-none items-center justify-center rounded-full bg-[#0d0e12] px-8 md:px-12 py-3 text-sm md:text-lg font-bold text-white uppercase tracking-widest hover:bg-white hover:text-black transition-colors duration-500 relative z-10">
+                        預約私人導覽
+                    </span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 py-10 relative z-10 bg-black/80 backdrop-blur-lg">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="text-xl md:text-2xl font-bold tracking-widest text-white uppercase">
+                CTMEBC<span class="text-accent">.</span>
+            </div>
+            <div class="text-gray-400 text-xs md:text-sm font-medium text-center order-3 md:order-2">
+                &copy; 2026 嘉寀萌商務中心 Jia Cai Meng Business Center.<br class="block md:hidden"> All rights reserved.
+            </div>
+            <div class="flex space-x-6 order-2 md:order-3">
+                <a href="#" class="text-gray-400 hover:text-white transition-colors hover-trigger"><iconify-icon icon="lucide:instagram" class="text-xl"></iconify-icon></a>
+                <a href="#" class="text-gray-400 hover:text-white transition-colors hover-trigger"><iconify-icon icon="lucide:linkedin" class="text-xl"></iconify-icon></a>
+                <a href="#" class="text-gray-400 hover:text-white transition-colors hover-trigger"><iconify-icon icon="lucide:mail" class="text-xl"></iconify-icon></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- GSAP & Interactions Scripts -->
+    <script>
+        document.addEventListener("DOMContentLoaded", (event) => {
+            
+            // 1. Custom Cursor Logic (Desktop Only)
+            const cursorDot = document.getElementById('cursor-dot');
+            const cursorFollower = document.getElementById('cursor-follower');
+            const hoverTriggers = document.querySelectorAll('.hover-trigger, a, button');
+
+            if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+                document.addEventListener('mousemove', (e) => {
+                    gsap.to(cursorDot, { x: e.clientX, y: e.clientY, duration: 0, ease: "none" });
+                    gsap.to(cursorFollower, { x: e.clientX, y: e.clientY, duration: 0.3, ease: "power2.out" });
+                });
+
+                hoverTriggers.forEach(trigger => {
+                    trigger.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+                    trigger.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+                });
+            }
+
+            // 2. Magnetic Button Effect (Desktop Only)
+            const magneticElements = document.querySelectorAll('.magnetic-wrap');
+            
+            if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+                magneticElements.forEach(elem => {
+                    const item = elem.firstElementChild; 
+                    
+                    elem.addEventListener('mousemove', (e) => {
+                        const rect = elem.getBoundingClientRect();
+                        const x = e.clientX - rect.left - rect.width / 2;
+                        const y = e.clientY - rect.top - rect.height / 2;
+                        
+                        gsap.to(item, { x: x * 0.4, y: y * 0.4, duration: 0.5, ease: "power2.out" });
+                    });
+
+                    elem.addEventListener('mouseleave', () => {
+                        gsap.to(item, { x: 0, y: 0, duration: 0.8, ease: "elastic.out(1, 0.3)" });
+                    });
+                });
+            }
+
+            // 3. Text Splitting for Reveal Animation
+            const splitTexts = document.querySelectorAll('.split-text');
+            splitTexts.forEach(text => {
+                const chars = text.innerText.split('');
+                text.innerHTML = '';
+                chars.forEach(char => {
+                    if(char === ' ' || char === '，' || char === '。') {
+                        text.innerHTML += `<span class="char inline-block opacity-0 translate-y-4 md:translate-y-8">${char}</span>`;
+                    } else {
+                        text.innerHTML += `<span class="char inline-block opacity-0 translate-y-4 md:translate-y-8">${char}</span>`;
+                    }
+                });
+            });
+
+            // 4. Initial Load Animations
+            const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+            
+            tl.fromTo("#hero-bg", 
+                { scale: 1.1, opacity: 0 }, 
+                { scale: 1, opacity: 0.3, duration: 2 }
+            )
+            .to("nav", { y: 0, opacity: 1, duration: 1 }, "-=1.5")
+            .to(".reveal-text", { y: 0, opacity: 1, duration: 1, stagger: 0.2 }, "-=1")
+            .to("h1 .char", { y: 0, opacity: 1, duration: 0.8, stagger: 0.02 }, "-=1");
+
+            // 5. Scroll Interactions (Intersection Observer)
+            // Adjust root margin for mobile so animations trigger slightly earlier
+            const isMobile = window.innerWidth <= 768;
+            const observerOptions = {
+                root: null,
+                rootMargin: isMobile ? '50px' : '0px', 
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        if (entry.target.classList.contains('reveal-item')) {
+                            gsap.fromTo(entry.target, 
+                                { y: isMobile ? 30 : 50, opacity: 0 },
+                                { y: 0, opacity: 1, duration: 1, ease: "power3.out" }
+                            );
+                        } else if (entry.target.classList.contains('split-text') || entry.target.querySelector('.split-text')) {
+                             const chars = entry.target.querySelectorAll('.char');
+                             if(chars.length > 0) {
+                                gsap.to(chars, {
+                                    y: 0, opacity: 1, duration: 0.8, stagger: 0.015, ease: "back.out(1.5)"
+                                });
+                             }
+                        }
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.reveal-item, .split-text, h2:has(.split-text)').forEach(el => {
+                if(el.classList.contains('reveal-item')) {
+                     gsap.set(el, { opacity: 0 }); 
+                }
+                observer.observe(el);
+            });
+
+            // 6. Mobile Optimized Parallax
+            window.addEventListener('scroll', () => {
+                const scrolled = window.scrollY;
+                document.querySelectorAll('.parallax-img').forEach(img => {
+                    // Turn off parallax on very small screens to save performance & prevent blur, 
+                    // keep a tiny bit on tablets, normal on desktop
+                    const speed = window.innerWidth < 640 ? 0 : (window.innerWidth < 1024 ? 0.03 : 0.08); 
+                    gsap.to(img, {
+                        y: scrolled * speed,
+                        duration: 0.1, // Short duration prevents trailing on scroll
+                        ease: "none",
+                        overwrite: "auto"
+                    });
+                });
+            }, { passive: true }); // passive flag improves scroll performance
+        });
+    </script>
+</body>
+</html>
