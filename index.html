@@ -149,17 +149,16 @@
 
         /* Fluid Typography specifically designed to prevent layout breaks */
         .fluid-text {
-            font-size: clamp(1.8rem, 6vw, 4.5rem);
+            font-size: clamp(1.5rem, 5vw, 4.5rem);
             line-height: 1.3;
-            word-break: keep-all; /* Keeps Chinese punctuation together with words */
-            white-space: nowrap; /* Forces text to stay on one line initially */
+            word-break: keep-all;
         }
 
-        /* Fallback for extremely small screens to allow wrapping if absolutely necessary */
-        @media (max-width: 360px) {
+        /* Allow wrapping on smaller screens */
+        @media (max-width: 480px) {
             .fluid-text {
                 white-space: normal;
-                word-break: break-all;
+                word-break: break-word;
             }
         }
     </style>
@@ -358,10 +357,10 @@
         <div class="w-full mx-auto px-4 md:px-6 text-center relative z-10 flex flex-col items-center justify-center">
             <iconify-icon icon="solar:buildings-2-bold-duotone" class="text-5xl md:text-6xl text-accent mb-6 md:mb-8"></iconify-icon>
             
-            <!-- Scalable Container for Title to prevent line breaks on phones -->
-            <div class="w-full max-w-[100vw] overflow-hidden flex justify-center mb-6 md:mb-8">
-                 <h2 class="font-black text-white whitespace-nowrap fluid-text drop-shadow-lg flex gap-0 md:gap-2">
-                    <span class="split-text">入駐嘉寀萌，</span>
+            <!-- Scalable Container for Title -->
+            <div class="w-full max-w-4xl mx-auto px-4 mb-6 md:mb-8">
+                 <h2 class="font-black text-white fluid-text drop-shadow-lg text-center leading-tight">
+                    <span class="split-text">入駐嘉寀萌，</span><br class="md:hidden">
                     <span class="split-text">掌握未來的發語權。</span>
                 </h2>
             </div>
